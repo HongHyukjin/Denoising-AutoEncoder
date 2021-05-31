@@ -1,0 +1,8 @@
+debug/
+data/
+*.vsdx
+*.~vsdx
+__pycache__/
+*.pyc
+playground/
+src/__pycache__/*
