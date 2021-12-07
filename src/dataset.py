@@ -1,32 +1,45 @@
 import numpy as np
+import random
 import tensorflow as tf
 import cv2 as cv
 import glob
 import os
 
 def next_batch(path, batch_size):
-    noisy_image = [cv.imread(file) for file in glob.glob(os.path.join(path + "/noisy_image"))]
-    reference = [cv.imread(file) for file in glob.glob(os.path.join(path + "/reference"))]
-    idx = np.arange(0, len(noisy_image))
+    length = len(glob.glob(os.path.join(path + "noisy_image/*")))
+    idx = np.arange(0, length)
+    #batch사이즈만큼 인덱스 선택
     np.random.shuffle(idx)
     idx = idx[:batch_size]
-    noisy_image = [noisy_image[i] for i in idx]
-    reference = [reference[i] for i in idx]
+    noisy_path = path + "noisy_image/image"
+    reference_path = path + "reference/image_"
+    noisy_image = []
+    reference = []
+    blind_num = []
+    #batch사이즈 만큼 추가
+    for num, i in enumerate(idx):
+        blind = random.randint(0, 4)
+        blind_num.append(blind)
+        #print(noisy_path + str(i//5) + "(" + str(blind) + ").jpg")
+        #print(reference_path + str(i//5) + "(" + str(blind) + ").jpg")
+        a = cv.imread(noisy_path + str(i//5) + "(" + str(blind) + ").jpg")
+        b = cv.imread(reference_path + str(i//5) + "(" + str(blind) + ").JPG")
+        noisy_image.append(a)
+        reference.append(b)
 
-    return np.asarray(noisy_image), np.asarray(reference)
+    noisy_image = np.asarray(noisy_image)
+    reference = np.asarray(reference)
+    noisy_image = noisy_image.astype("float32")
+    reference = reference.astype("float32")
+    return noisy_image, reference, blind_num
 
 
 
-def preprocess(noisy_img, reference):
-
-    color = noisy_img[:, :, :3]
-    normal = noisy_img[:, :, 12:15]
-    albedo = noisy_img[:, :, 16:19]
-
-    noisy_img = tf.concat(
-        [color, normal, albedo], axis=-1)
-
-    reference = reference[:, :, 0:3]
-
-
-    return noisy_img, reference
+# noisy_image = [cv.imread(noisy_path + str(i) + ".jpg") for num, i in enumerate(idx)]
+#     reference = [cv.imread(reference_path + str(i) + ".jpg") for num, i in enumerate(idx)]
+#     noisy_image = np.asarray(noisy_image)
+#     reference = np.asarray(reference)
+#     noisy_image = noisy_image.astype("float32")
+#     reference = reference.astype("float32")
+#
+#     return noisy_image, reference

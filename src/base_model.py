@@ -36,14 +36,20 @@ class BaseModel(metaclass=ABCMeta):
       loss = tf.reduce_mean(diff)
 
     elif loss_func == 'SSIM':
-      loss = SSIM(outputs, refers)       
+      loss = SSIM(outputs, refers)
+
+    elif loss_func == 'SSIM+L1':
+      ssim = SSIM(outputs, refers)
+      diff = tf.abs(tf.subtract(outputs, refers))
+      l1 = tf.reduce_mean(diff)
+      loss = ssim + l1
 
     return loss
 
 
   def build_train_op(self, lr, loss):
     #optim = tf.train.AdamOptimizer(lr)
-    optim = tf.train.RMSPropOptimizer(lr);
+    optim = tf.train.RMSPropOptimizer(lr)
     grads = optim.compute_gradients(loss)
 
     # Clip gradients to avoid exploding weights

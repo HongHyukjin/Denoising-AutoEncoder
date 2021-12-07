@@ -1,3 +1,4 @@
+
 import tensorflow as tf
 from src.base_model import BaseModel
 from src.tf_ops import conv2d, deconv2d
@@ -39,10 +40,9 @@ class DenoisingNet(BaseModel):
     layer = deconv2d(inputs, feature, kernel, stride, activation=activation)
     return tf.layers.batch_normalization(layer)
 
-  # Random Noise
+  #Base AutoEncoder
   def build_model(self):
-      input = self.inputs + tf.random_normal(tf.shape(self.inputs))
-      layer1 = conv2d(input, 64, 7, 1, activation=tf.nn.relu)
+      layer1 = conv2d(self.inputs, 64, 7, 1, activation=tf.nn.relu)
 
       layer2 = self.conv2d_module(layer1, 64, 4, 2, tf.nn.relu)
       layer3 = self.conv2d_module(layer2, 128, 4, 2, tf.nn.relu)
@@ -50,11 +50,13 @@ class DenoisingNet(BaseModel):
 
       layer5 = self.conv2d_module(layer4, 512, 4, 2, tf.nn.relu)
 
-      layer6 = self.deconv2d_module(layer5, 256, 4, 2, tf.nn.relu) + layer4
-      layer7 = self.deconv2d_module(layer6, 128, 4, 2, tf.nn.relu) + layer3
-      layer8 = self.deconv2d_module(layer7, 64, 4, 2, tf.nn.relu) + layer2
-      layer9 = self.deconv2d_module(layer8, 64, 4, 2, tf.nn.relu) + layer1
+      layer6 = self.deconv2d_module(layer5, 256, 4, 2, tf.nn.leaky_relu) + layer4
+      layer7 = self.deconv2d_module(layer6, 128, 4, 2, tf.nn.leaky_relu) + layer3
+      layer8 = self.deconv2d_module(layer7, 64, 4, 2, tf.nn.leaky_relu) + layer2
+      layer9 = self.deconv2d_module(layer8, 64, 4, 2, tf.nn.leaky_relu) + layer1
+
 
       output = conv2d(layer9, 3, 3, 1, activation=tf.nn.relu)
 
       return output
+
